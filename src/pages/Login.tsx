@@ -12,22 +12,32 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Shield, User } from 'lucide-react';
-import { createThirdwebClient, getContract } from "thirdweb";
-import { defineChain } from "thirdweb/chains";
-// import { readContract } from "thirdweb";
-import { useReadContract } from "thirdweb/react";
-
+import { useContract, useContractRead } from '@thirdweb-dev/react';
 
 type UserType = 'government' | 'contractor' | 'citizen' | '';
 
 const ADMIN_WALLET_ADDRESS = '0xd3ED43e5A34617c81e2dbE70b8539C2723F7eD6a';
 
-export default async function Login() {
+export default function Login() {
   const [userType, setUserType] = useState<UserType>('');
   const [hoveredSide, setHoveredSide] = useState<'left' | 'right' | null>(null);
   const navigate = useNavigate();
   const address = useAddress();
 
+  // Connect to your contract using the Thirdweb useContract hook
+  const { contract } = useContract("0x7874671859088Ef8F46CDC9216b8cF585BFa827F");
+
+  // Read data from the contract using useContractRead
+  const { data, isLoading } = useContractRead(contract, "contractorName", ["contractorName"]);
+
+  // Log data whenever it changes
+  useEffect(() => {
+    if (data !== undefined) {
+      console.log("Data:", data);
+    }
+  }, [data]);
+
+  // Navigate based on user type and address
   useEffect(() => {
     if (address === ADMIN_WALLET_ADDRESS && userType === 'government') {
       navigate('/gov-dashboard');
@@ -48,33 +58,6 @@ export default async function Login() {
     }
   };
 
-  // create the client with your clientId, or secretKey if in a server environment
-const client = createThirdwebClient({
-  clientId: "9eb166f7a2b9521cf1a2ff016e422a70"
- });
-
-// connect to your contract
-const contract = getContract({
-  client,
-  chain: defineChain(80002),
-  address: "0x7874671859088Ef8F46CDC9216b8cF585BFa827F"
-});
-
-const { data, isPending } = useReadContract({
-  contract,
-  method: "function contractorName() view returns (string)",
-  params: []
-});
-  
-
-    // useEffect to log the data whenever it changes
-    useEffect(() => {
-      if (data !== undefined) {
-        console.log("Data:", data);
-      }
-    }, [data]); // Dependency array to trigger the effect when data changes
-  
-
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-primary/10 to-secondary/10">
       <div
@@ -92,10 +75,9 @@ const { data, isPending } = useReadContract({
           <CardContent className="space-y-4">
             <div className="space-y-2 flex flex-col items-center">
               <ConnectWallet className="w-full max-w-xs" />
-
               <div>
-      {isPending ? <p>Loading...</p> : <p>Data: {data}</p>}
-    </div>
+                {isLoading ? <p>Loading...</p> : <p>Data: {data || "No data found"}</p>}
+              </div>
             </div>
             <Separator />
             <form onSubmit={(e) => handleLogin(e, 'gov-contractor')} className="space-y-4">
