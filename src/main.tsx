@@ -4,7 +4,11 @@ import { ThirdwebProvider } from '@thirdweb-dev/react';
 import App from './App';
 import './index.css';
 // import { myChain } from '../utils/constants';
-import { Polygon } from "@thirdweb-dev/chains";
+import { Polygon, PolygonAmoyTestnet } from "@thirdweb-dev/chains";
+
+
+
+
 
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 
@@ -17,11 +21,13 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 createRoot(rootElement).render(
   <StrictMode>
+ 
     <ThirdwebProvider 
       clientId={CLIENT_ID}
-      activeChain={Polygon}
+      activeChain={PolygonAmoyTestnet}
     >
       <App />
     </ThirdwebProvider>
-  </StrictMode>
+ 
+</StrictMode>
 );

@@ -10,7 +10,24 @@ import CitizenApp from "./citizen/CitizenApp"
 
 import ProjectsScreen from "./citizen/ProjectScreen"
 import DetailedProjectScreen from "./citizen/DetailedProjectScreen"
+import DepositFundsScreen from "./DepositFundsScreen"
+import ContractComponent from "./ContractComponent"
+import ContractTest from "./Test"
+import ContractTestPage from "./Test"
+import LoginWithQueryClient from "./pages/Login"
 
+
+
+// const contract = getContract({
+//   // the client you have created via `createThirdwebClient()`
+//   client,
+//   // the chain the contract is deployed on
+//   chain: ethereum,
+//   // the contract's address
+//   address: "0x123...",
+//   // OPTIONAL: the contract's abi
+//   abi: [...],
+// });
 
 function App() {
   return (
@@ -19,6 +36,7 @@ function App() {
           <main className="flex-1 ">
             <Routes>
               <Route path="/" element={<Login />} />
+      
               <Route path="/gov-dashboard" element={<GovDashboard />} />
               <Route
                 path="/contractor-dashboard"
