@@ -1,50 +1,83 @@
-'use client'
-
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ConnectWallet } from '@thirdweb-dev/react'
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ConnectWallet, useAddress } from '@thirdweb-dev/react';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Lock, Shield, User } from 'lucide-react'
+} from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Shield, User } from 'lucide-react';
+import { createThirdwebClient, getContract } from "thirdweb";
+import { defineChain } from "thirdweb/chains";
+// import { readContract } from "thirdweb";
+import { useReadContract } from "thirdweb/react";
 
-type UserType = 'government' | 'contractor' | 'citizen' | ''
 
-export default function Login() {
-  const [userType, setUserType] = useState<UserType>('')
-  const [hoveredSide, setHoveredSide] = useState<'left' | 'right' | null>(null)
-  const navigate = useNavigate()
+type UserType = 'government' | 'contractor' | 'citizen' | '';
+
+const ADMIN_WALLET_ADDRESS = '0xd3ED43e5A34617c81e2dbE70b8539C2723F7eD6a';
+
+export default async function Login() {
+  const [userType, setUserType] = useState<UserType>('');
+  const [hoveredSide, setHoveredSide] = useState<'left' | 'right' | null>(null);
+  const navigate = useNavigate();
+  const address = useAddress();
+
+  useEffect(() => {
+    if (address === ADMIN_WALLET_ADDRESS && userType === 'government') {
+      navigate('/gov-dashboard');
+    }
+  }, [address, userType, navigate]);
 
   const handleLogin = (e: React.FormEvent, type: 'gov-contractor' | 'citizen') => {
-    e.preventDefault()
+    e.preventDefault();
+
     if (type === 'gov-contractor') {
-      if (userType === 'government') {
-        navigate('/gov-dashboard')
+      if (userType === 'government' && address === ADMIN_WALLET_ADDRESS) {
+        navigate('/gov-dashboard');
       } else if (userType === 'contractor') {
-        navigate('/contractor-dashboard')
+        navigate('/contractor-dashboard');
       }
     } else {
-      navigate('/citizenHome')
+      navigate('/citizenHome');
     }
-  }
+  };
+
+  // create the client with your clientId, or secretKey if in a server environment
+const client = createThirdwebClient({
+  clientId: "9eb166f7a2b9521cf1a2ff016e422a70"
+ });
+
+// connect to your contract
+const contract = getContract({
+  client,
+  chain: defineChain(80002),
+  address: "0x7874671859088Ef8F46CDC9216b8cF585BFa827F"
+});
+
+const { data, isPending } = useReadContract({
+  contract,
+  method: "function contractorName() view returns (string)",
+  params: []
+});
+  
+
+    // useEffect to log the data whenever it changes
+    useEffect(() => {
+      if (data !== undefined) {
+        console.log("Data:", data);
+      }
+    }, [data]); // Dependency array to trigger the effect when data changes
+  
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-primary/10 to-secondary/10">
-      <div 
+      <div
         className={`flex-1 flex items-center justify-center transition-colors duration-300 ${hoveredSide === 'left' ? 'bg-black/10' : ''}`}
         onMouseEnter={() => setHoveredSide('left')}
         onMouseLeave={() => setHoveredSide(null)}
@@ -57,11 +90,13 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-          <div className="space-y-2 flex flex-col items-center  ">
-            
-            <ConnectWallet className="w-full max-w-xs" />
-          </div>
-            {/* <ConnectWallet className="w-full" /> */}
+            <div className="space-y-2 flex flex-col items-center">
+              <ConnectWallet className="w-full max-w-xs" />
+
+              <div>
+      {isPending ? <p>Loading...</p> : <p>Data: {data}</p>}
+    </div>
+            </div>
             <Separator />
             <form onSubmit={(e) => handleLogin(e, 'gov-contractor')} className="space-y-4">
               <Select value={userType} onValueChange={(value: UserType) => setUserType(value)}>
@@ -80,7 +115,7 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
-      <div 
+      <div
         className={`flex-1 flex items-center justify-center transition-colors duration-300 ${hoveredSide === 'right' ? 'bg-black/10' : ''}`}
         onMouseEnter={() => setHoveredSide('right')}
         onMouseLeave={() => setHoveredSide(null)}
@@ -93,7 +128,6 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-        
             <Separator />
             <form onSubmit={(e) => handleLogin(e, 'citizen')} className="space-y-4">
               <Button type="submit" className="w-full">
@@ -103,14 +137,6 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
-      <CardFooter className="flex flex-col items-center space-y-2 text-center absolute bottom-0 left-0 right-0 pb-4">
-        <p className="text-sm text-muted-foreground">
-          By signing in, you agree to our Terms of Service and Privacy Policy.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          © 2023 Your Company Name. All rights reserved.
-        </p>
-      </CardFooter>
     </div>
-  )
+  );
 }

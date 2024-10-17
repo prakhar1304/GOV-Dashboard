@@ -10,11 +10,7 @@ import CitizenApp from "./citizen/CitizenApp"
 
 import ProjectsScreen from "./citizen/ProjectScreen"
 import DetailedProjectScreen from "./citizen/DetailedProjectScreen"
-import DepositFundsScreen from "./DepositFundsScreen"
-import ContractComponent from "./ContractComponent"
-import ContractTest from "./Test"
-import ContractTestPage from "./Test"
-import LoginWithQueryClient from "./pages/Login"
+
 
 
 
